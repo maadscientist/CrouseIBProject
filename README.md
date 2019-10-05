@@ -1,1 +1,1 @@
-# CrouseIBProject
+# Generative Art Generator

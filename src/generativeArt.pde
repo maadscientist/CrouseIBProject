@@ -1,6 +1,8 @@
 float x, y, z, b;
 float angle;
 
+
+shapeMaker shape = new shapeMaker();
 void setup() {
   size(1000, 1000);
   frameRate(10);
@@ -8,16 +10,19 @@ void setup() {
   y = 75;
   z = 144;
   angle = 0;
+  
 }
 
 void draw() {
   background(255);
   stroke(0, 0, 100); 
 
-  for (int i = 0; i < 120; i++) {
-    drawShape(145, 150);
-    //    Draw Stuff Here
+  for (int i = 0; i < 10; i++) {
+    for (int j = 0; j < 10; j++){
+      shape.drawShape(360/int(random(5,24)), 75, 150*j, 150*i);
+    }
   }
+  noLoop();
 }
 /**
 If tiling selected = 1, 4, 16, etc...

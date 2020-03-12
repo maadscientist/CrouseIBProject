@@ -15,8 +15,8 @@ class Solution {
     } 
   }
   void swap (int index1,  int index2){
-    int temp = index1;
-    order.set(index1, index2);
+    int temp = order.get(index1);
+    order.set(index1, order.get(index2));
     order.set(index2, temp);
 
   }

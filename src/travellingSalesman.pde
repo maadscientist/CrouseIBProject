@@ -3,8 +3,9 @@ int radius;
 float bestLength;
 IntList bestPath;
 RandomSolution randomSalesman;
+BruteForce bruteSalesman;
 void setup() {
-  frameRate(1);
+  frameRate(30);
   radius = 10;
   background(255);
   fill(0);
@@ -15,10 +16,11 @@ void setup() {
     vertices.add(new Vertice(int(random(0, width)), int(random(0, height))));
   }
   randomSalesman = new RandomSolution(vertices.size());
+  bruteSalesman = new BruteForce(vertices.size());
   bestLength = 1000000;
 }
 void draw() {
-  int[] pathOrder = randomSalesman.generateSolution();
+  int[] pathOrder = bruteSalesman.generateSolution();
 
   display(pathOrder);
   //check if it's the best solution
@@ -64,14 +66,14 @@ void mousePressed() {
       vertices.remove(i);
       removing = true;
       randomSalesman.updateLength(vertices.size());
+      clearBestPath();
     }
   }
   if (!removing) {
     vertices.add(new Vertice(mouseX, mouseY));
     randomSalesman.updateLength(vertices.size());
-    //clears bestPath and stuff
-    bestPath.clear();
-    bestLength = 1000000;
+    
+    clearBestPath();
   }
 }
 
@@ -83,4 +85,9 @@ float pathLength(int[] ordering) {
     sum += dist(vertices.get(ordering[i]).x, vertices.get(ordering[i]).y, vertices.get(ordering[i+1]).x, vertices.get(ordering[i+1]).y);
   }
   return sum;
+}
+//clears bestPath and stuff
+void clearBestPath(){
+ bestPath.clear();
+ bestLength = 1000000; 
 }

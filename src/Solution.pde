@@ -1,11 +1,13 @@
 class Solution {
   //uses an intlist because of the shuffle function
   IntList order;
+  int count;
   Solution(int length) {
     order = new IntList();
     for (int i = 0; i < length; i++) {
       order.append(i);
     }
+    count = 0;
   }
 
   void updateLength(int length){
@@ -19,5 +21,12 @@ class Solution {
     order.set(index1, order.get(index2));
     order.set(index2, temp);
 
+  }
+  int[] generateSolution() {
+    order.shuffle();
+    return order.array();
+  }
+  void resetCount(){
+   count = 0; 
   }
 }

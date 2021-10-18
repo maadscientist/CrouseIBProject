@@ -1,0 +1,184 @@
+ArrayList <Vertice> vertices; //<>//
+int radius, count, totalPossiblePaths;
+float bestLength;
+IntList bestPath;
+boolean running, isBranchOrBrute;
+RandomSolution randomSalesman;
+BruteForce bruteSalesman;
+BranchBound branchSalesman;
+Button randomButton, bruteButton, branchButton, startButton, reduceSpeed, increaseSpeed;
+Solution Salesman;
+int frameRateModifier;
+void setup() {
+  noStroke();
+  frameRate(120);
+  radius = 10;
+  background(255);
+  fill(0);
+  vertices = new ArrayList<Vertice>();
+  bestPath = new IntList();
+  size(800, 850);
+  for (int i = 0; i < 8; i++) {
+    vertices.add(new Vertice(int(random(0, width)), int(random(50, height))));
+  }
+  randomSalesman = new RandomSolution(vertices.size());
+  bruteSalesman = new BruteForce(vertices.size());
+  branchSalesman = new BranchBound(vertices.size());
+  //bestLength is originally set to an arbitrarily large number
+  bestLength = 1000000;
+  //When using the brute force method, the total amount of paths that must be explored will be equal to the factorial of the vertices divided by two.
+  totalPossiblePaths = factorial(vertices.size())/2;
+  //"count" tracks the total amount of variations that have been explored.
+  count = 0;
+  running = false;
+  isBranchOrBrute = false;
+  //BUTTONS:
+  randomButton = new Button(60, 25, 120, 40, "Random Solution");
+  bruteButton = new Button(180, 25, 120, 40, "Brute Force");
+  branchButton = new Button(300, 25, 120, 40, "Branch and Bound");
+  startButton = new Button(420, 25, 120, 40, "Start/Stop");
+  reduceSpeed = new Button(540, 25, 120, 40, "Reduce Speed");
+  increaseSpeed = new Button(660, 25, 120, 40, "Increase Speed");
+  //frame rate modifier controls which frames the program will run on - effectively allowing you to control the speed/framerate
+  frameRateModifier = 1;
+  Salesman = bruteSalesman;
+}
+void draw() {
+  if (running && frameCount % frameRateModifier == 0) {
+    //generates the next path and adds 1 to the count
+
+      int[] pathOrder = Salesman.generateSolution();
+      count++;
+      displayPath(pathOrder);
+      //check if it's the best solution
+      float totalLength = pathLength(pathOrder);
+
+      if (bestLength > totalLength) {
+        bestLength = totalLength;
+        bestPath.clear();
+        branchSalesman.setBest(bestLength);
+        for (int j : pathOrder) {
+          bestPath.append(j);
+        }
+      }
+    
+  }
+  display();
+}
+
+
+void displayPath(int[] path) {
+  background(255);
+  for (Vertice i : vertices) {
+    circle(i.x, i.y, radius);
+  }
+  stroke(0);
+  strokeWeight(10);
+
+  for (int i = 0; i < path.length-1; i++) {
+    line(vertices.get(path[i]).x, vertices.get(path[i]).y, vertices.get(path[i+1]).x, vertices.get(path[i+1]).y);
+  }
+  stroke(100, 200, 100);
+  strokeWeight(2);
+  for (int i = 0; i < bestPath.size(); i++) {
+    if (i < bestPath.size()-1) {
+      line(vertices.get(bestPath.get(i)).x, vertices.get(bestPath.get(i)).y, vertices.get(bestPath.get(i+1)).x, vertices.get(bestPath.get(i+1)).y);
+    }
+  }
+  if (isBranchOrBrute) {
+    text(Salesman.count + "/" + totalPossiblePaths, 60, 65);
+    if (Salesman.count >= totalPossiblePaths) {
+      running = false;
+      text("done!", 400, 400);
+    }
+  }
+  text("length of the shortest path found: " + int(bestLength), 130, 50);
+}
+void display() {
+  //display vertices:
+  for (Vertice i : vertices) {
+    circle(i.x, i.y, radius);
+  }
+  //display buttons:
+  randomButton.display();
+  bruteButton.display();
+  branchButton.display();
+  startButton.display();
+  reduceSpeed.display();
+  increaseSpeed.display();
+}
+void mousePressed() {
+  boolean removing = false;
+  for (int i = 0; i < vertices.size(); i++) {
+    if (dist(vertices.get(i).x, vertices.get(i).y, mouseX, mouseY) < radius && vertices.size() > 1) {
+      //if you click on a vertice, this should delete that vertice.
+      fill(255);
+      circle(vertices.get(i).x, vertices.get(i).y, radius+1);
+      fill(0);
+      vertices.remove(i);
+      removing = true;
+      clearBestPath();
+      Salesman.updateLength(vertices.size());
+      branchSalesman.setBest(1000000);
+      Salesman.resetCount();
+    }
+  }
+  if (!removing) {
+    if (mouseY > 50 ) {
+      vertices.add(new Vertice(mouseX, mouseY));
+      clearBestPath();
+      totalPossiblePaths = factorial(vertices.size());
+      Salesman.resetCount();
+      Salesman.updateLength(vertices.size());
+    } else {
+      //takes advantage of polymorphism to set what the Salesman is.
+      if (randomButton.hover()) {
+        Salesman = randomSalesman;
+        Salesman.resetCount();
+        isBranchOrBrute = false;
+      } else if (bruteButton.hover()) {
+        Salesman = bruteSalesman;
+        Salesman.resetCount();
+        isBranchOrBrute = true;
+      } else if (branchButton.hover()) {
+        Salesman = branchSalesman;
+        Salesman.resetCount();
+        isBranchOrBrute = true;
+      } else if (startButton.hover()) {
+        //starts or stops the program
+        running = !running;
+      } else if (reduceSpeed.hover()) {
+        if (frameRateModifier < 120) {
+          frameRateModifier += 5;
+        }
+      } else if (increaseSpeed.hover()) {
+        if (frameRateModifier > 1) {
+          frameRateModifier -= 5;
+        }
+      }
+    }
+  }
+}
+
+//@param: an ordered integer array that gives the "path" or order of the vertices in the application
+//@return: the length of the given path
+float pathLength(int[] ordering) {
+  float sum = 0;
+
+  for (int i = 0; i < ordering.length-1; i++) {
+    sum += dist(vertices.get(ordering[i]).x, vertices.get(ordering[i]).y, vertices.get(ordering[i+1]).x, vertices.get(ordering[i+1]).y);
+  }
+  return sum;
+}
+//clears bestPath and stuff
+void clearBestPath() {
+  bestPath.clear();
+  bestLength = 1000000;
+}
+int factorial(int n) {
+  if (n <= 1) {
+    return 1;
+  } else {
+    return n*factorial(n-1);
+  }
+}

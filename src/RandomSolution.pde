@@ -4,9 +4,8 @@ class RandomSolution extends Solution {
     super(length);
   }
   int[] generateSolution() {
-
-    super.swap(int(random(order.size())), int(random(order.size())));
-    print(order);
+    order.shuffle();
+    //super.swap(int(random(order.size())), int(random(order.size())));
     return order.array();
   }
 }

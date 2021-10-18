@@ -4,31 +4,38 @@ class BruteForce extends Solution {
     super(length);
   }
   int[] generateSolution() {
+    /**
+     Find the largest x such that P[x]<P[x+1].
+     (If there is no such x, P is the last permutation.)
+     Find the largest y such that P[x]<P[y].
+     Swap P[x] and P[y].
+     Reverse P[x+1 .. n].
+     https://www.quora.com/How-would-you-explain-an-algorithm-that-generates-permutations-using-lexicographic-ordering
+     */
     int largest1 = 0;
-    for (int i = 0; i < order.size()-1; i++) {
+    int length = order.size();
+    for (int i = 0; i < length-1; i++) {
       if (order.get(i) < order.get(i+1)) {
         largest1 = i;
       }
     }
     int largest2 = 0;
-    for (int j = 0; j < order.size(); j++) {
-      if (order.get(j) < order.get(largest1)) {
+    for (int i = 0; i < length; i++) {
+      if (order.get(largest1) < order.get(i)) {
+        largest2 = i;
       }
-    }
-    if (largest1 == -1) {
-      //it's finished
     }
     super.swap(largest1, largest2);
     //reverse order from largest1 + 1 to the end
     int[] tempArray = order.array();
-    int length = order.size();
     order.clear();
     for (int i = 0; i <= largest1; i++) {
       order.append(tempArray[i]);
     }
-    for (int i = 0; i < length-(largest1 + 1); i++) {
-      order.append(tempArray[order.size()-i]);
+    for (int i = length-1; i > largest1; i--) {
+      order.append(tempArray[i]);
     }  
+    count++;
     return order.array();
   }
 }
